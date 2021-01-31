@@ -3,7 +3,6 @@ const https = require('https');
 const _ = require('lodash');
 const fs = require('fs');
 
-global.state = {};
 global.ack = {};
 global.devices = new Proxy({}, {
     set: function(target, property, value, receiver) {
@@ -34,7 +33,7 @@ global.devices = new Proxy({}, {
     }
 });
 
-const STInfo = 'STInfo';
+const STInfo = __dirname+'/config/STInfo';
 if( !fs.existsSync(STInfo) ){
 	fs.closeSync(fs.openSync(STInfo, 'w'));
 }
@@ -85,12 +84,11 @@ app.get('/ack', (req, res) => {
 });
 */
 
-const EW11 = './config/ew11.json';
+const EW11 = __dirname+'/config/ew11.json';
 if( fs.existsSync(EW11) ){
 	const { connect } = require('net');
 	const { host:EW11_HOST, port:EW11_PORT, type } = require(EW11);
-	const { chop, parsing, save, setup, typeOf, light } = require('./lib/'+type+'.js');
-
+	const { chop, parsing, save, setup, typeOf, light } = require(__dirname+'/lib/'+type+'.js');
 
 	let socket = connect({host:EW11_HOST, port:EW11_PORT});
     	socket.on('connect', () => console.log(`connected to EW11 [${EW11_HOST}:${EW11_PORT}]`));
@@ -142,11 +140,7 @@ app.use((err, req, res, next) => {
 	res.status(500).send({status:500, message: 'internal error', type:'internal'});
 });
 
-const { port=30100 } = require('./config/config.json');
+const { port=30100 } = require(__dirname+'/config/config.json');
 app.listen(port, () => {
 	console.log('Run API Server');
 });
-
-//1. http 서버가 ST의 smartapps 와 연동되게 개발.
-//2. 
-
