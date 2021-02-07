@@ -20,7 +20,13 @@ global.devices = new Proxy({}, {
 					const req = https.request(url, { method: 'POST' }, (res) => {
 						let data = '';
 						res.on('data', chunk => data+=chunk );
-						res.on('end', () => {});
+						res.on('end', () => {
+							if(data){
+								let result = JSON.parse(data);
+								if( result.error )
+									console.error(data)
+							}
+						});
 					});
 					req.on("error", err => error("[ST] " + err.message) );
 					req.end();
@@ -74,6 +80,12 @@ app.post('/smartthings/uninstalled', (req, res) => {
 
 	res.send({ message: "Success" });
 });
+app.get('/restart', (req, res) => {
+	console.log('Restart API Server');
+	process.exit(1);
+
+	res.send({ message: "Success" });
+});
 
 /*
 app.get('/device', (req, res) => {
@@ -91,10 +103,14 @@ if( fs.existsSync(EW11) ){
 	const { chop, parsing, save, setup, typeOf, light } = require(__dirname+'/lib/'+type+'.js');
 
 	let socket = connect({host:EW11_HOST, port:EW11_PORT});
-    	socket.on('connect', () => console.log(`connected to EW11 [${EW11_HOST}:${EW11_PORT}]`));
-    	socket.on('end', () => console.log('disconnected.')); 
-    	socket.on('error', err => console.error(err)); 
-    	socket.on('timeout', () => console.log('connection timeout.'));
+    	socket.on('connect', () => console.log(`EW11 - connected [${EW11_HOST}:${EW11_PORT}]`));
+    	socket.on('end', () => console.log('EW11 - disconnected.')); 
+    	socket.on('error', err => {
+			console.log('EW11 - error');
+			console.error(err);
+			process.exit(0);
+		});
+    	socket.on('timeout', () => console.log('EW11 - connection timeout.'));
 
     	socket
 			.pipe(chop)
