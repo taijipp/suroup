@@ -7,29 +7,31 @@ global.ack = {};
 global.devices = new Proxy({}, {
     set: function(target, property, value, receiver) {
 		if( ST.Info ){
-			const original = _.get(target, property+'.state');
-			const changed = _.get(value, 'state');
+			const original = _.get(target, property+'.property');
+			const changed = _.get(value, 'property');
 
-			if(original != changed){
+			if( !_.isEqual(original, changed) ){
 				const { app_url, app_id, access_token } = ST.Info;
 				const { property:change } = value;
 
 				const path = '/updateProperty/'+property+'/';
 				_.map(change, (val, type) => {
-					const url = new URL(app_url + app_id + path + type + '/' + val + '?access_token=' + access_token);
-					const req = https.request(url, { method: 'POST' }, (res) => {
-						let data = '';
-						res.on('data', chunk => data+=chunk );
-						res.on('end', () => {
-							if(data){
-								let result = JSON.parse(data);
-								if( result.error )
-									console.error(data)
-							}
+					if( _.get(original, type) != _.get(changed, type) ) {
+						const url = new URL(app_url + app_id + path + type + '/' + val + '?access_token=' + access_token);
+						const req = https.request(url, { method: 'POST' }, (res) => {
+							let data = '';
+							res.on('data', chunk => data+=chunk );
+							res.on('end', () => {
+								if(data){
+									let result = JSON.parse(data);
+									if( result.error )
+										console.error(data)
+								}
+							});
 						});
-					});
-					req.on("error", err => error("[ST] " + err.message) );
-					req.end();
+						req.on("error", err => error("[ST] " + err.message) );
+						req.end();
+					}
 				});
 			}
 		}
@@ -97,10 +99,10 @@ app.get('/ack', (req, res) => {
 */
 
 const EW11 = __dirname+'/config/ew11.json';
-if( fs.existsSync(EW11) ){
+if( fs.existsSync(EW11) ) {
 	const { connect } = require('net');
 	const { host:EW11_HOST, port:EW11_PORT, type } = require(EW11);
-	const { chop, parsing, save, setup, typeOf, light } = require(__dirname+'/lib/'+type+'.js');
+	const { chop, parsing, save, setup, typeOf, light, thermostat } = require(__dirname+'/lib/'+type+'.js');
 
 	let socket = connect({host:EW11_HOST, port:EW11_PORT});
     	socket.on('connect', () => console.log(`EW11 - connected [${EW11_HOST}:${EW11_PORT}]`));
@@ -118,7 +120,6 @@ if( fs.existsSync(EW11) ){
 			.pipe(save)
 			.pipe(setup)
 
-	//----------------------------------->>
 	//app.get("/", (req, res) => res.redirect('homenet'));
 
 	app.get ('/homenet', (req, res) => {
@@ -134,20 +135,25 @@ if( fs.existsSync(EW11) ){
 	});
 	app.put ('/homenet/:id/:property/:value', (req, res) => {
 		const {id, property, value} = req.params;
-		
+		let message = 'Success';
+
+		let device;
 		const type = typeOf(id);
 		switch( type ) {
 			case 'light' :
-				const device = light(id);
-				if(property == 'switch'){
-					_.set(device, value, socket);
-				}
+				device = light(id, socket);
+				_.set(device, property, value);
+				break;
+			case 'thermostat' :
+				device = thermostat(id, socket);	
+				_.set(device, property, value);
 				break;
 			default :
+				message = 'Fail';
 				break;
 		}
 
-		res.send({ message: "Success" });
+		res.send({ message });
 	});
 }
 app.use((err, req, res, next) => {
