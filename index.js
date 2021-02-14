@@ -102,7 +102,7 @@ const EW11 = __dirname+'/config/ew11.json';
 if( fs.existsSync(EW11) ) {
 	const { connect } = require('net');
 	const { host:EW11_HOST, port:EW11_PORT, type } = require(EW11);
-	const { chop, parsing, save, setup, typeOf, light, thermostat } = require(__dirname+'/lib/'+type+'.js');
+	const { chop, parsing, save, setup, typeOf, light, thermostat, outlet } = require(__dirname+'/lib/'+type+'.js');
 
 	let socket = connect({host:EW11_HOST, port:EW11_PORT});
     	socket.on('connect', () => console.log(`EW11 - connected [${EW11_HOST}:${EW11_PORT}]`));
@@ -145,7 +145,11 @@ if( fs.existsSync(EW11) ) {
 				_.set(device, property, value);
 				break;
 			case 'thermostat' :
-				device = thermostat(id, socket);	
+				device = thermostat(id, socket);
+				_.set(device, property, value);
+				break;
+			case 'outlet' :
+				device = outlet(id, socket);
 				_.set(device, property, value);
 				break;
 			default :
