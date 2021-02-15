@@ -29,7 +29,7 @@ global.devices = new Proxy({}, {
 								}
 							});
 						});
-						req.on("error", err => error("[ST] " + err.message) );
+						req.on("error", err => console.error("[ST] " + err.message) );
 						req.end();
 					}
 				});
