@@ -148,6 +148,8 @@ def connectorCallback(physicalgraph.device.HubResponse hubResponse){
 						typeName = "suroup-thermostat"
 					} else if (item.type == "outlet") {
 						typeName = "suroup-outlet"
+					} else if (item.type == "gas") {
+						typeName = "suroup-gas"
 					}
 
 					def childDevice = addChildDevice("suroup", typeName, dni, location.hubs[0].id, [
