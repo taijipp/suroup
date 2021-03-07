@@ -82,27 +82,18 @@ app.post('/smartthings/uninstalled', (req, res) => {
 
 	res.send({ message: "Success" });
 });
-app.get('/restart', (req, res) => {
-	console.log('Restart API Server');
-	process.exit(1);
-
-	res.send({ message: "Success" });
-});
-
-/*
-app.get('/device', (req, res) => {
-	res.send({devices});
-});
-app.get('/ack', (req, res) => {
-	res.send({ack});
-});
-*/
 
 const EW11 = __dirname+'/config/ew11.json';
 if( fs.existsSync(EW11) ) {
 	const { connect } = require('net');
 	const { host:EW11_HOST, port:EW11_PORT, type } = require(EW11);
-	const { chop, parsing, save, setup, typeOf, light, thermostat, outlet, gas, send } = require(__dirname+'/lib/'+type+'.js');
+	const { chop, parsing, save, setup, light, thermostat, outlet, gas } = require(__dirname+'/lib/'+type+'.js');
+	const Handler = {
+		'light': light,
+		'thermostat': thermostat, 
+		'outlet': outlet, 
+		'gas': gas
+	};
 
 	let socket = connect({host:EW11_HOST, port:EW11_PORT});
     	socket.on('connect', () => console.log(`EW11 - connected [${EW11_HOST}:${EW11_PORT}]`));
@@ -137,25 +128,16 @@ if( fs.existsSync(EW11) ) {
 		const {id, property, value} = req.params;
 		let message = 'Success';
 
-		let device;
-		const type = typeOf(id);
+		const { type } = _.get(devices, id);
 		switch( type ) {
 			case 'light' :
-				device = light(id, socket);
-				_.set(device, property, value);
-				break;
 			case 'thermostat' :
-				device = thermostat(id, socket);
-				_.set(device, property, value);
-				break;
 			case 'outlet' :
-				device = outlet(id, socket);
-				_.set(device, property, value);
-				break;
 			case 'gas' :
-				device = gas(id, socket);
+				const device = Handler[type](id, socket);
 				_.set(device, property, value);
 				break;
+
 			default :
 				message = 'Fail';
 				break;
@@ -165,7 +147,6 @@ if( fs.existsSync(EW11) ) {
 	});
 }
 app.use((err, req, res, next) => {
-	// Do logging and user-friendly error message display
 	console.error(err.stack);
 	res.status(500).send({status:500, message: 'internal error', type:'internal'});
 });
