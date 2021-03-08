@@ -18,7 +18,6 @@ metadata {
 		capability "Switch"
 		capability "Actuator"
 		capability "Refresh"
-		capability "Switch"
 		capability "Health Check"
 	}
 
