@@ -13,7 +13,7 @@
  *  for the specific language governing permissions and limitations under the License.
  */
 metadata {
-	definition (name: "suroup-thermostat", namespace: "suroup", author: "taijipp@gmail.com", cstHandler: true, ocfDeviceType: "oic.d.thermostat") {
+	definition (name: "suroup-thermostat", namespace: "taijipp", author: "taijipp@gmail.com", cstHandler: true, ocfDeviceType: "oic.d.thermostat") {
 		capability "Switch"
 		capability "Actuator"
 		capability "Temperature Measurement"

@@ -13,7 +13,7 @@
  *  for the specific language governing permissions and limitations under the License.
  */
 metadata {
-	definition (name: "suroup-gas", namespace: "suroup", author: "taijipp@gmail.com", cstHandler: true, ocfDeviceType: "oic.d.switch") {
+	definition (name: "suroup-gas", namespace: "taijipp", author: "taijipp@gmail.com", cstHandler: true, ocfDeviceType: "oic.d.switch") {
 		capability "Switch"
 		capability "Refresh"
 		capability "Actuator"

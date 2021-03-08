@@ -13,7 +13,7 @@
  *  for the specific language governing permissions and limitations under the License.
  */
 metadata {
-	definition (name: "suroup-outlet", namespace: "suroup", author: "taijipp@gmail.com", cstHandler: true, ocfDeviceType: "oic.d.smartplug") {
+	definition (name: "suroup-outlet", namespace: "taijipp", author: "taijipp@gmail.com", cstHandler: true, ocfDeviceType: "oic.d.smartplug") {
 		capability "Power Meter"
 		capability "Switch"
 		capability "Actuator"

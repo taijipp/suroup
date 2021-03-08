@@ -13,7 +13,7 @@
  *  for the specific language governing permissions and limitations under the License.
  */
 metadata {
-	definition (name: "suroup-light", namespace: "suroup", author: "taijipp@gmail.com", cstHandler: true, ocfDeviceType: "oic.d.light") {
+	definition (name: "suroup-light", namespace: "taijipp", author: "taijipp@gmail.com", cstHandler: true, ocfDeviceType: "oic.d.light") {
 		capability "Light"
 		capability "Switch"
 		capability "Refresh"
