@@ -154,7 +154,7 @@ def connectorCallback(physicalgraph.device.HubResponse hubResponse){
 						typeName = "suroup-gas"
 					}
 
-					def childDevice = addChildDevice("suroup", typeName, dni, location.hubs[0].id, [
+					def childDevice = addChildDevice("taijipp", typeName, dni, location.hubs[0].id, [
 						"label": item.id,
 						"uri": item.uri
 					])                    
