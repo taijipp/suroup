@@ -21,7 +21,9 @@ definition(
 	category: "My Apps",
 	iconUrl: "https://user-images.githubusercontent.com/4987449/107354933-22102980-6b12-11eb-8230-d9e52ac36ada.png",
 	iconX2Url: "https://user-images.githubusercontent.com/4987449/107354933-22102980-6b12-11eb-8230-d9e52ac36ada.png",
-	iconX3Url: "https://user-images.githubusercontent.com/4987449/107354933-22102980-6b12-11eb-8230-d9e52ac36ada.png")
+	iconX3Url: "https://user-images.githubusercontent.com/4987449/107354933-22102980-6b12-11eb-8230-d9e52ac36ada.png",
+    oauth: true
+)
 
 
 preferences {
