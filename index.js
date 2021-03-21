@@ -106,6 +106,9 @@ if( fs.existsSync(EW11) ) {
 		});
     	socket.on('timeout', () => console.log('EW11 - connection timeout.'));
 
+		socket.setTimeout(10000);
+		socket.setKeepAlive(true, 9000);
+
     	socket
 			.pipe(chop)
 			.pipe(parsing)
