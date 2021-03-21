@@ -87,12 +87,13 @@ const EW11 = __dirname+'/config/ew11.json';
 if( fs.existsSync(EW11) ) {
 	const { connect } = require('net');
 	const { host:EW11_HOST, port:EW11_PORT, type } = require(EW11);
-	const { chop, parsing, save, setup, light, thermostat, outlet, gas } = require(__dirname+'/lib/'+type+'.js');
+	const { chop, parsing, save, setup, light, thermostat, outlet, gas, breaker } = require(__dirname+'/lib/'+type+'.js');
 	const Handler = {
 		'light': light,
 		'thermostat': thermostat, 
 		'outlet': outlet, 
-		'gas': gas
+		'gas': gas,
+		'breaker': breaker
 	};
 
 	let socket = connect({host:EW11_HOST, port:EW11_PORT});
@@ -134,6 +135,7 @@ if( fs.existsSync(EW11) ) {
 			case 'thermostat' :
 			case 'outlet' :
 			case 'gas' :
+			case 'breaker' :
 				const device = Handler[type](id, socket);
 				_.set(device, property, value);
 				break;
