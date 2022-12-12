@@ -46,7 +46,7 @@ const createEvent = (key, value, component='main') => {
 				value:value||0
 			};
 			break;
-		case 'setTmep':
+		case 'setTemp':
 			event = {
 				component,
 				capability:'thermostatHeatingSetpoint',
@@ -86,7 +86,7 @@ devices = new Proxy({}, {
 			if( !_.isEqual(original, changed) ){
 				const device = db.get(type).find({externalId}).value();
 				if(device){
-					const events = [];
+					let events = [];
 					const { property } = value;
 					_.map(property, (val, key) => {
 						if( _.get(original, key) != _.get(changed, key) ){
@@ -147,7 +147,7 @@ const createThermostat = async (ctx, configure)=>{
 	
 	let events = [
 		createEvent('setTemp', property.setTemp),
-		createEvent('setTemp', property.setTemp)
+		createEvent('curTemp', property.curTemp)
 	];
 	
 	return await createDevice(ctx, configure, process.env.deviceThermostat, events);
@@ -184,7 +184,7 @@ const smartapp = new SmartApps()
 		locales: ['en', 'ko'],
 		defaultLocale: 'en'
 	})
-	.enableEventLogging(1)
+	//.enableEventLogging(1)
 	.permissions([
 		'i:deviceprofiles:*',
 		'r:devices:*',
