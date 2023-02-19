@@ -1,0 +1,18 @@
+{
+	"apps" : [{
+		"name"        : "main",
+		"script"      : "./index.js",
+		"env": {
+			"NODE_ENV": "development"
+		},
+		"env_production" : {
+			"NODE_ENV": "production"
+		}
+	},{
+		"name"       : "oauth",
+		"script"     : "./oauth_server/main.js"
+	},{
+		"name"       : "api",
+		"script"     : "./web_hook/main.js"
+	}]
+}
