@@ -417,7 +417,7 @@ const smartapp = new SmartApps()
 				
 		_.set(
 			Handler[type](externalId, Socket.esv),
-			'fanSpped', speed);
+			'fanSpeed', speed);
 	})
 
 module.exports = smartapp;
