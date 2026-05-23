@@ -1,75 +1,98 @@
 'use strict'
 const _ = require('lodash');
+const { connect } = require('net');
 
 const type = process.env.type;
-const EW11 = {
-	host:process.env.ew11_host,
-	port:process.env.ew11_port
-};
-if( EW11.host && EW11.port && type ) {
-	const { connect } = require('net');
+const reconnectDelay = Number(process.env.socket_reconnect_delay || 5000);
 
-	const lib = require(__dirname+'/lib/'+type+'.js');
-	const { chop, parsing, save, setup } = lib
+const connectSocket = ({ name, socketKey, options, modulePath, handlerKeys }) => {
+	if( !options.host || !options.port || !type ) {
+		return;
+	}
 
-	_.assign( Handler, _.pick( lib , ['light', 'thermostat', 'outlet', 'gas', 'breaker']));
+	let reconnectTimer = null;
 
-	let ew11 = connect(EW11);
-    	ew11.on('connect', () => console.log(`EW11 - connected [${EW11.host}:${EW11.port}]`));
-    	ew11.on('end', () => console.log('EW11 - disconnected. [end]')); 
-    	ew11.on('close', () => {
-    		console.log('EW11 - disconnected. [close]');
-    	}); 
-    	ew11.on('error', err => {
-			console.log('EW11 - error');
-			console.error(err);
-			process.exit(0);
+	const scheduleReconnect = () => {
+		if( reconnectTimer ) {
+			return;
+		}
+
+		Socket[socketKey] = null;
+		console.log(`${name} - reconnecting in ${reconnectDelay}ms.`);
+		reconnectTimer = setTimeout(() => {
+			reconnectTimer = null;
+			openSocket();
+		}, reconnectDelay);
+	};
+
+	const openSocket = () => {
+		const resolvedPath = require.resolve(modulePath);
+		delete require.cache[resolvedPath];
+
+		const lib = require(modulePath);
+		const { chop, parsing, save, setup } = lib;
+
+		_.assign( Handler, _.pick( lib , handlerKeys));
+
+		const socket = connect(options);
+		Socket[socketKey] = socket;
+
+		socket.on('connect', () => console.log(`${name} - connected [${options.host}:${options.port}]`));
+		socket.on('end', () => console.log(`${name} - disconnected. [end]`));
+		socket.on('close', hadError => {
+			console.log(`${name} - disconnected. [close${hadError?':error':''}]`);
+			scheduleReconnect();
 		});
-    	ew11.on('timeout', () => console.log('EW11 - connection timeout.'));
-		ew11.setTimeout(10000);
-		ew11.setKeepAlive(true, 9000);
-	
-	    ew11
+		socket.on('error', err => {
+			console.log(`${name} - error`);
+			console.error(err);
+		});
+		socket.on('timeout', () => {
+			console.log(`${name} - connection timeout.`);
+			socket.destroy(new Error(`${name} connection timeout`));
+		});
+		socket.setTimeout(10000);
+		socket.setKeepAlive(true, 9000);
+
+		[chop, parsing, save, setup].forEach(stream => {
+			stream.on('error', err => {
+				console.log(`${name} - stream error`);
+				console.error(err);
+				socket.destroy(err);
+			});
+		});
+
+		socket
 			.pipe(chop)
 			.pipe(parsing)
 			.pipe(save)
 			.pipe(setup);
+	};
 
-	Socket.ew11 = ew11;
-}
+	Socket[socketKey] = null;
+	openSocket();
+};
+
+const EW11 = {
+	host:process.env.ew11_host,
+	port:process.env.ew11_port
+};
+connectSocket({
+	name:'EW11',
+	socketKey:'ew11',
+	options:EW11,
+	modulePath:__dirname+'/lib/'+type+'.js',
+	handlerKeys:['light', 'thermostat', 'outlet', 'gas', 'breaker']
+});
 
 const ESV = {
 	host:process.env.esv_host,
 	port:process.env.esv_port
 };
-if( ESV.host && ESV.port && type ) {
-	const { connect } = require('net');
-
-	const lib = require(__dirname+'/lib/esv/'+type+'.js');
-	const { chop, parsing, save, setup } = lib;
-
-	_.assign( Handler, _.pick( lib , ['esv']));
-
-	let esv = connect(ESV);
-    	esv.on('connect', () => console.log(`ESV - connected [${ESV.host}:${ESV.port}]`));
-    	esv.on('end', () => console.log('ESV - disconnected. [end]')); 
-    	esv.on('close', () => {
-    		console.log('ESV - disconnected. [close]');
-    	}); 
-    	esv.on('error', err => {
-			console.log('ESV - error');
-			console.error(err);
-			process.exit(0);
-		});
-    	esv.on('timeout', () => console.log('ESV - connection timeout.'));
-		esv.setTimeout(10000);
-		esv.setKeepAlive(true, 9000);
-	
-	    esv
-			.pipe(chop)
-			.pipe(parsing)
-			.pipe(save)
-			.pipe(setup);
-
-	Socket.esv = esv;
-}
+connectSocket({
+	name:'ESV',
+	socketKey:'esv',
+	options:ESV,
+	modulePath:__dirname+'/lib/esv/'+type+'.js',
+	handlerKeys:['esv']
+});
